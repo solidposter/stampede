@@ -57,7 +57,7 @@ func main() {
 	fmt.Print("Starting clients from port ", *portPtr)
 	for i := *portPtr; i < *portPtr+*numPtr; i++ {
 		c := newClient(strconv.Itoa(i))
-		c.start(targetIP, serverconfig)
+		go c.start(targetIP, serverconfig)
 	}
 	fmt.Println(" to port", *portPtr+*numPtr-1)
 	<-(chan int)(nil) // wait forever
