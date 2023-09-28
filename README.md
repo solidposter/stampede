@@ -2,7 +2,7 @@
 
 I used stampede to load-test concurrent active sessions in firewalls.
 
-This test runs UDP traffic over 1M sessions.
+This example runs UDP traffic over 1M sessions.
 ### Server:
 stampede -s -k secretkey -p 20000 -n 2000
 
