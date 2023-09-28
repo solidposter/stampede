@@ -45,7 +45,6 @@ func main() {
 	fmt.Println("Starting initial Probe of", target)
 	c := newClient(strconv.Itoa(*portPtr))
 	serverconfig := c.probe(target, *keyPtr)
-	fmt.Println(serverconfig)
 
 	ip, err := net.ResolveUDPAddr("udp", target)
 	if err != nil {
