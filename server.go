@@ -9,7 +9,7 @@ import (
 )
 
 type server struct {
-	port string // low port in range
+	port string
 }
 
 func newServer(port string) *server {
@@ -32,19 +32,29 @@ func (s *server) start(config message) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println("received packet", addr, length)
 
 		dec := gob.NewDecoder(bytes.NewBuffer(nbuf[:length]))
 		err = dec.Decode(&m)
 		if err != nil {
-			fmt.Println("decode error:", err) // do I care ?
+			fmt.Println("Server decode error:", err, addr)
 			continue
 		}
-		fmt.Println(m)
 		if m.Key != config.Key {
-			fmt.Println("Key mismatch")
+			fmt.Println(" Server key mismatch", addr)
 			continue
 		}
-		fmt.Println("key match")
+
+		m.Lport = config.Lport
+		m.Hport = config.Hport
+		buffer := new(bytes.Buffer)
+		enc := gob.NewEncoder(buffer)
+		err = enc.Encode(m)
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = conn.WriteTo(buffer.Bytes(), addr)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
