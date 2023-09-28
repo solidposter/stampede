@@ -56,10 +56,9 @@ func (c *client) start(targetIP string, config message) {
 
 				length, addr, err := conn.ReadFrom(nbuf)
 				if err != nil {
-					fmt.Println("client error", err)
+					fmt.Println("client error", err, addr, length)
 					continue
 				}
-				fmt.Println("client received packet from", addr, length)
 				break
 			}
 		}

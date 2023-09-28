@@ -26,12 +26,12 @@ func main() {
 			Hport: *portPtr + *numPtr,
 		}
 
-		fmt.Println("starting servers on in port range", *portPtr, *portPtr+*numPtr)
+		fmt.Print("Starting servers from port ", *portPtr)
 		for i := *portPtr; i < *portPtr+*numPtr; i++ {
-			fmt.Println("starting server on port", i)
 			s := newServer(strconv.Itoa(i))
 			go s.start(serverconfig)
 		}
+		fmt.Println(" to port", *portPtr+*numPtr-1)
 		<-(chan int)(nil) // wait forever
 	}
 
@@ -54,11 +54,12 @@ func main() {
 	targetIP := ip.IP.String()
 
 	// start the clients
+	fmt.Print("Starting clients from port ", *portPtr)
 	for i := *portPtr; i < *portPtr+*numPtr; i++ {
-		fmt.Println("starting client", i, target)
 		c := newClient(strconv.Itoa(i))
 		c.start(targetIP, serverconfig)
 	}
+	fmt.Println(" to port", *portPtr+*numPtr-1)
 	<-(chan int)(nil) // wait forever
 
 	/*
