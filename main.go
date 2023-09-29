@@ -74,6 +74,6 @@ func main() {
 		c := newClient(strconv.Itoa(i))
 		go c.start(targetIP, serverconfig)
 	}
-	fmt.Printf("%v: (%v UDP sessions)\n", *portPtr+*numPtr-1, (serverconfig.Hport-serverconfig.Lport+1)**numPtr)
+	fmt.Printf("%v: %v UDP sessions\n", *portPtr+*numPtr-1, (serverconfig.Hport-serverconfig.Lport+1)**numPtr)
 	<-(chan int)(nil) // wait forever
 }
