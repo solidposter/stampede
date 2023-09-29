@@ -16,10 +16,6 @@ package main
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
 
-// The client sets Key and Id
-// Server responds if Key is valid
-// with the same Id and Lport and Hport of the server
-
 // The server configuration and the req/resp uses the same struct.
 // Server starts listeners on the from Lport to Hport.
 // The clients send req with Key and ID set, server responds and
