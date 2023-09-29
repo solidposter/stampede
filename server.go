@@ -18,7 +18,7 @@ package main
 
 import (
 	"bytes"
-	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -49,7 +49,7 @@ func (s *server) start(config message) {
 			log.Fatal(err)
 		}
 
-		dec := gob.NewDecoder(bytes.NewBuffer(nbuf[:length]))
+		dec := json.NewDecoder(bytes.NewBuffer(nbuf[:length]))
 		err = dec.Decode(&m)
 		if err != nil {
 			fmt.Println("Server decode error:", err, addr)
@@ -63,7 +63,7 @@ func (s *server) start(config message) {
 		m.Lport = config.Lport
 		m.Hport = config.Hport
 		buffer := new(bytes.Buffer)
-		enc := gob.NewEncoder(buffer)
+		enc := json.NewEncoder(buffer)
 		err = enc.Encode(m)
 		if err != nil {
 			log.Fatal(err)

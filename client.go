@@ -18,7 +18,7 @@ package main
 
 import (
 	"bytes"
-	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -49,7 +49,7 @@ func (c *client) start(targetIP string, config message) {
 
 			config.Id += 1
 			buffer := new(bytes.Buffer)
-			enc := gob.NewEncoder(buffer)
+			enc := json.NewEncoder(buffer)
 			err := enc.Encode(config)
 			if err != nil {
 				log.Fatal(err)
@@ -95,7 +95,7 @@ func (c *client) probe(target string, key string) message {
 		Hport: 0,
 	}
 
-	enc := gob.NewEncoder(&buffer)
+	enc := json.NewEncoder(&buffer)
 	err := enc.Encode(msg)
 	if err != nil {
 		log.Fatal(err)
@@ -118,7 +118,7 @@ func (c *client) probe(target string, key string) message {
 		log.Fatal(err)
 	}
 
-	dec := gob.NewDecoder(bytes.NewBuffer(nbuf[:length]))
+	dec := json.NewDecoder(bytes.NewBuffer(nbuf[:length]))
 	err = dec.Decode(&m)
 	if err != nil {
 		fmt.Println("Client decode error:", err, addr)
