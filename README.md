@@ -16,3 +16,4 @@ Each of the client goroutines will iterate over the server port range.
 The above configuration will run traffic at the speed of RTT across
 1M active sessions (2000*500).
 
+The numbers can be tuned a lot, there is no problem running the server with 50k ports active as long as the ports are free.
