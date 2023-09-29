@@ -27,8 +27,8 @@ import (
 func main() {
 
 	modePtr := flag.Bool("s", false, "Set server mode")
-	portPtr := flag.Int("p", 10000, "Base port")
-	numPtr := flag.Int("n", 1000, "Number ports")
+	portPtr := flag.Int("p", 20000, "Base port")
+	numPtr := flag.Int("n", 10, "Number ports")
 	keyPtr := flag.String("k", "hemlignyckel", "Key")
 	flag.Parse()
 
