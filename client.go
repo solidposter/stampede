@@ -45,7 +45,7 @@ func (c *client) start(targetIP string, config message) {
 	}
 
 	for {
-		for dport := config.Lport; dport < config.Hport; dport++ {
+		for dport := config.Lport; dport <= config.Hport; dport++ {
 
 			config.Id += 1
 			buffer := new(bytes.Buffer)

@@ -34,20 +34,19 @@ func main() {
 
 	// Server mode
 	if *modePtr {
-		fmt.Println("server mode")
 		serverconfig := message{
 			Key:   *keyPtr,
 			Id:    0,
 			Lport: *portPtr,
-			Hport: *portPtr + *numPtr,
+			Hport: *portPtr + *numPtr - 1,
 		}
 
-		fmt.Print("Starting servers from port ", *portPtr)
+		fmt.Printf("Starting servers on ports %v-", *portPtr)
 		for i := *portPtr; i < *portPtr+*numPtr; i++ {
 			s := newServer(strconv.Itoa(i))
 			go s.start(serverconfig)
 		}
-		fmt.Println(" to port", *portPtr+*numPtr-1)
+		fmt.Printf("%v\n", *portPtr+*numPtr-1)
 		<-(chan int)(nil) // wait forever
 	}
 
@@ -58,9 +57,10 @@ func main() {
 
 	// Probe server for port configuration
 	target := flag.Args()[0]
-	fmt.Println("Starting initial Probe of", target)
+	fmt.Printf("Starting probe of %v: ", target)
 	c := newClient(strconv.Itoa(*portPtr))
 	serverconfig := c.probe(target, *keyPtr)
+	fmt.Printf("ports %v-%v active\n", serverconfig.Lport, serverconfig.Hport)
 
 	ip, err := net.ResolveUDPAddr("udp", target)
 	if err != nil {
@@ -69,11 +69,11 @@ func main() {
 	targetIP := ip.IP.String()
 
 	// start the clients
-	fmt.Print("Starting clients from port ", *portPtr)
+	fmt.Printf("Starting clients on ports %v-", *portPtr)
 	for i := *portPtr; i < *portPtr+*numPtr; i++ {
 		c := newClient(strconv.Itoa(i))
 		go c.start(targetIP, serverconfig)
 	}
-	fmt.Println(" to port", *portPtr+*numPtr-1)
+	fmt.Printf("%v: (%v UDP sessions)\n", *portPtr+*numPtr-1, (serverconfig.Hport-serverconfig.Lport+1)**numPtr)
 	<-(chan int)(nil) // wait forever
 }
