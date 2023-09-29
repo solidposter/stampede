@@ -64,12 +64,12 @@ func (c *client) start(targetIP string, req message) {
 				log.Fatal(err)
 			}
 			for {
-				conn.SetReadDeadline((time.Now().Add(1000 * time.Millisecond)))
 				_, err = conn.WriteTo(buffer.Bytes(), targetAddr)
 				if err != nil {
 					log.Fatal(err)
 				}
 
+				conn.SetReadDeadline((time.Now().Add(1000 * time.Millisecond)))
 				length, addr, err := conn.ReadFrom(nbuf)
 				if err != nil {
 					fmt.Println("client error", err, addr, length)
