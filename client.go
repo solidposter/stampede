@@ -36,7 +36,7 @@ func newClient(srcport string) *client {
 	}
 }
 
-func (c *client) start(targetIP string, config message) {
+func (c *client) start(targetIP string, req message) {
 	nbuf := make([]byte, 1500)
 
 	conn, err := net.ListenPacket("udp", ":"+c.srcport)
@@ -45,12 +45,12 @@ func (c *client) start(targetIP string, config message) {
 	}
 
 	for {
-		for dport := config.Lport; dport <= config.Hport; dport++ {
+		for dport := req.Lport; dport <= req.Hport; dport++ {
 
-			config.Id += 1
+			req.Id += 1
 			buffer := new(bytes.Buffer)
 			enc := json.NewEncoder(buffer)
-			err := enc.Encode(config)
+			err := enc.Encode(req)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -86,9 +86,9 @@ func (c *client) start(targetIP string, config message) {
 func (c *client) probe(target string, key string) message {
 	var buffer bytes.Buffer
 	nbuf := make([]byte, 1500)
-	m := message{}
+	resp := message{}
 
-	msg := message{
+	req := message{
 		Key:   key,
 		Id:    0,
 		Lport: 0,
@@ -96,7 +96,7 @@ func (c *client) probe(target string, key string) message {
 	}
 
 	enc := json.NewEncoder(&buffer)
-	err := enc.Encode(msg)
+	err := enc.Encode(req)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -119,11 +119,11 @@ func (c *client) probe(target string, key string) message {
 	}
 
 	dec := json.NewDecoder(bytes.NewBuffer(nbuf[:length]))
-	err = dec.Decode(&m)
+	err = dec.Decode(&resp)
 	if err != nil {
 		fmt.Println("Client decode error:", err, addr)
 	}
 
 	conn.Close()
-	return m
+	return resp
 }

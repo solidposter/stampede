@@ -20,6 +20,11 @@ package main
 // Server responds if Key is valid
 // with the same Id and Lport and Hport of the server
 
+// The server configuration and the req/resp uses the same struct.
+// Server starts listeners on the from Lport to Hport.
+// The clients send req with Key and ID set, server responds and
+// sets Lport and Hport in the response.
+
 type message struct {
 	Key   string // secret key
 	Id    int    // message ID

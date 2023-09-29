@@ -35,7 +35,7 @@ func newServer(port string) *server {
 }
 
 func (s *server) start(config message) {
-	m := message{}
+	req := message{}
 	nbuf := make([]byte, 1500)
 
 	conn, err := net.ListenPacket("udp", ":"+s.port)
@@ -50,21 +50,21 @@ func (s *server) start(config message) {
 		}
 
 		dec := json.NewDecoder(bytes.NewBuffer(nbuf[:length]))
-		err = dec.Decode(&m)
+		err = dec.Decode(&req)
 		if err != nil {
 			fmt.Println("Server decode error:", err, addr)
 			continue
 		}
-		if m.Key != config.Key {
+		if req.Key != config.Key {
 			fmt.Println(" Server key mismatch", addr)
 			continue
 		}
 
-		m.Lport = config.Lport
-		m.Hport = config.Hport
+		req.Lport = config.Lport
+		req.Hport = config.Hport
 		buffer := new(bytes.Buffer)
 		enc := json.NewEncoder(buffer)
-		err = enc.Encode(m)
+		err = enc.Encode(req)
 		if err != nil {
 			log.Fatal(err)
 		}
