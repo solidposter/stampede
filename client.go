@@ -38,6 +38,7 @@ func newClient(srcport string) *client {
 
 func (c *client) start(targetIP string, req message) {
 	nbuf := make([]byte, 1500)
+	resp := message{}
 
 	conn, err := net.ListenPacket("udp", ":"+c.srcport)
 	if err != nil {
@@ -46,7 +47,6 @@ func (c *client) start(targetIP string, req message) {
 
 	for {
 		for dport := req.Lport; dport <= req.Hport; dport++ {
-
 			req.Id += 1
 			buffer := new(bytes.Buffer)
 			enc := json.NewEncoder(buffer)
@@ -63,6 +63,8 @@ func (c *client) start(targetIP string, req message) {
 			if err != nil {
 				log.Fatal(err)
 			}
+
+			success := false // set to true with succesful decode and valid response
 			for {
 				_, err = conn.WriteTo(buffer.Bytes(), targetAddr)
 				if err != nil {
@@ -70,12 +72,38 @@ func (c *client) start(targetIP string, req message) {
 				}
 
 				conn.SetReadDeadline((time.Now().Add(1000 * time.Millisecond)))
-				length, addr, err := conn.ReadFrom(nbuf)
-				if err != nil {
-					fmt.Println("client error", err, addr, length)
-					continue
+				for {
+					length, addr, err := conn.ReadFrom(nbuf)
+					if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
+						// Timeout reached,print a dot and resend request
+						fmt.Print(".")
+						break
+					}
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					if addr.String() != targetAddr.String() {
+						// some other packet hit the port, ignore and go back to listen
+						log.Printf("Packet received from incorrect IP address %v with length %v", addr, length)
+						continue
+					}
+					dec := json.NewDecoder(bytes.NewBuffer(nbuf[:length]))
+					err = dec.Decode(&resp)
+					if err != nil {
+						log.Print("Client decode error:", err)
+						continue
+					}
+					if resp.Id != req.Id { // Incorrect Id, probably an old slow packet
+						log.Printf("Incorrect Id, expected %v got %v\n", req.Id, resp.Id)
+						continue
+					}
+					success = true // valid response
+					break
 				}
-				break
+				if success {
+					break // move on to next port
+				}
 			}
 		}
 	}
