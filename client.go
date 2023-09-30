@@ -142,7 +142,7 @@ func (c *client) probe(target string, key string) message {
 		log.Fatal(err)
 	}
 
-	success := false // set to true with succesful decode of response
+	success := false // set to true for succesful response
 	for {
 		_, err = conn.WriteTo(buffer.Bytes(), targetAddr)
 		if err != nil {
