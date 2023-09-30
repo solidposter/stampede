@@ -65,7 +65,7 @@ func (c *client) start(targetIP string, req message) {
 				log.Fatal(err)
 			}
 
-			success := false // set to true with succesful decode and valid response
+			success := false // set to true for valid response
 			for {
 				_, err = conn.WriteTo(buffer.Bytes(), targetAddr)
 				if err != nil {
@@ -76,7 +76,6 @@ func (c *client) start(targetIP string, req message) {
 				for {
 					length, addr, err := conn.ReadFrom(nbuf)
 					if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
-						// Timeout reached,print a dot and resend request
 						fmt.Print(".")
 						break
 					}
@@ -142,7 +141,7 @@ func (c *client) probe(target string, key string) message {
 		log.Fatal(err)
 	}
 
-	success := false // set to true for succesful response
+	success := false // set to true for valid response
 	for {
 		_, err = conn.WriteTo(buffer.Bytes(), targetAddr)
 		if err != nil {
@@ -153,7 +152,6 @@ func (c *client) probe(target string, key string) message {
 		for {
 			length, addr, err := conn.ReadFrom(nbuf)
 			if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
-				// Timeout reached,print a dot and resend request
 				fmt.Print(".")
 				break
 			}
@@ -179,7 +177,7 @@ func (c *client) probe(target string, key string) message {
 				log.Printf("Incorrect Id, expected %v got %v\n", req.Id, resp.Id)
 				continue
 			}
-			success = true
+			success = true // valid response
 			break
 		}
 
