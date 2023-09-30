@@ -19,7 +19,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net"
 )
@@ -52,11 +51,11 @@ func (s *server) start(config message) {
 		dec := json.NewDecoder(bytes.NewBuffer(nbuf[:length]))
 		err = dec.Decode(&req)
 		if err != nil {
-			fmt.Println("Server decode error:", err, addr)
+			log.Print("Server decode error:", err, addr)
 			continue
 		}
 		if req.Key != config.Key {
-			fmt.Println(" Server key mismatch", addr)
+			log.Println("Server key mismatch", addr)
 			continue
 		}
 
