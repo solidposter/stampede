@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"strconv"
 	"time"
@@ -84,7 +85,6 @@ func (c *client) start(targetIP string, req message) {
 					}
 
 					if addr.String() != targetAddr.String() {
-						// some other packet hit the port, ignore and go back to listen
 						log.Printf("Packet received from invalid source %v with length %v", addr, length)
 						continue
 					}
@@ -94,7 +94,11 @@ func (c *client) start(targetIP string, req message) {
 						log.Print("Client decode error:", err)
 						continue
 					}
-					if resp.Id != req.Id { // Incorrect Id, probably an old slow packet
+					if resp.Key != req.Key {
+						log.Print("Invalid key in response:", resp.Key)
+						continue
+					}
+					if resp.Id != req.Id {
 						log.Printf("Incorrect Id, expected %v got %v\n", req.Id, resp.Id)
 						continue
 					}
@@ -118,7 +122,7 @@ func (c *client) probe(target string, key string) message {
 
 	req := message{
 		Key:   key,
-		Id:    0,
+		Id:    rand.Int(),
 		Lport: 0,
 		Hport: 0,
 	}
@@ -158,7 +162,6 @@ func (c *client) probe(target string, key string) message {
 			}
 
 			if addr.String() != targetAddr.String() {
-				// some other packet hit the port, ignore and go back to listen
 				log.Printf("Packet received from invalid source %v with length %v", addr, length)
 				continue
 			}
@@ -166,6 +169,14 @@ func (c *client) probe(target string, key string) message {
 			err = dec.Decode(&resp)
 			if err != nil {
 				log.Print("Client decode error:", err)
+				continue
+			}
+			if resp.Key != req.Key {
+				log.Print("Invalid key in response:", resp.Key)
+				continue
+			}
+			if resp.Id != req.Id {
+				log.Printf("Incorrect Id, expected %v got %v\n", req.Id, resp.Id)
 				continue
 			}
 			success = true
