@@ -113,7 +113,7 @@ func (c *client) start(targetIP string, req message) {
 
 }
 
-// Use probe to get server port range in a struct message
+// Returns a message struct with server configuration
 func (c *client) probe(target string, key string) message {
 	var buffer bytes.Buffer
 	nbuf := make([]byte, 1500)
