@@ -109,21 +109,46 @@ func (c *client) probe(target string, key string) message {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = conn.WriteTo(buffer.Bytes(), targetAddr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	length, addr, err := conn.ReadFrom(nbuf)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	dec := json.NewDecoder(bytes.NewBuffer(nbuf[:length]))
-	err = dec.Decode(&resp)
-	if err != nil {
-		fmt.Println("Client decode error:", err, addr)
-	}
+	success := false // set to true with succesful decode of response
+	for {
+		_, err = conn.WriteTo(buffer.Bytes(), targetAddr)
+		if err != nil {
+			log.Fatal(err)
+		}
 
+		conn.SetReadDeadline((time.Now().Add(1000 * time.Millisecond)))
+		for {
+			length, addr, err := conn.ReadFrom(nbuf)
+			if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
+				// Timeout reached,print a dot and resend request
+				fmt.Print(".")
+				break
+			}
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if addr.String() != targetAddr.String() {
+				// some other packet hit the port, ignore and go back to listen
+				log.Printf("Packet received from incorrect IP address %v with length %v", addr, length)
+				continue
+			}
+			dec := json.NewDecoder(bytes.NewBuffer(nbuf[:length]))
+			err = dec.Decode(&resp)
+			if err != nil {
+				log.Print("Client decode error:", err)
+				continue
+			}
+			success = true
+			break
+		}
+
+		if success {
+			break
+		}
+
+	}
 	conn.Close()
 	return resp
 }
