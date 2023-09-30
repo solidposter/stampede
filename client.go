@@ -85,7 +85,7 @@ func (c *client) start(targetIP string, req message) {
 
 					if addr.String() != targetAddr.String() {
 						// some other packet hit the port, ignore and go back to listen
-						log.Printf("Packet received from incorrect IP address %v with length %v", addr, length)
+						log.Printf("Packet received from invalid source %v with length %v", addr, length)
 						continue
 					}
 					dec := json.NewDecoder(bytes.NewBuffer(nbuf[:length]))
@@ -159,7 +159,7 @@ func (c *client) probe(target string, key string) message {
 
 			if addr.String() != targetAddr.String() {
 				// some other packet hit the port, ignore and go back to listen
-				log.Printf("Packet received from incorrect IP address %v with length %v", addr, length)
+				log.Printf("Packet received from invalid source %v with length %v", addr, length)
 				continue
 			}
 			dec := json.NewDecoder(bytes.NewBuffer(nbuf[:length]))
