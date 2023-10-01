@@ -35,7 +35,7 @@ func newServer(port string) *server {
 
 func (s *server) start(config message) {
 	req := message{}
-	nbuf := make([]byte, 65536)
+	nbuf := make([]byte, 128)
 
 	conn, err := net.ListenPacket("udp", ":"+s.port)
 	if err != nil {

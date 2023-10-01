@@ -38,7 +38,7 @@ func newClient(srcport string) *client {
 }
 
 func (c *client) start(targetIP string, req message) {
-	nbuf := make([]byte, 65536)
+	nbuf := make([]byte, 128)
 	resp := message{}
 
 	conn, err := net.ListenPacket("udp", ":"+c.srcport)
@@ -116,7 +116,7 @@ func (c *client) start(targetIP string, req message) {
 // Returns a message struct with server configuration
 func (c *client) probe(target string, key string) message {
 	var buffer bytes.Buffer
-	nbuf := make([]byte, 65536)
+	nbuf := make([]byte, 128)
 	resp := message{}
 
 	req := message{
