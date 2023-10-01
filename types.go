@@ -16,8 +16,8 @@ package main
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
 
-// The server configuration and the req/resp uses the same struct.
-// Server starts listeners on the from Lport to Hport.
+// The server configuration and the req/resp use the same struct.
+// Server starts listeners on ports Lport to Hport.
 // The clients send req with Key and ID set, server responds and
 // sets Lport and Hport in the response.
 
