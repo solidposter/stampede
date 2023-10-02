@@ -110,7 +110,6 @@ func (c *client) start(targetIP string, req message) {
 			}
 		}
 	}
-
 }
 
 // Returns a message struct with server configuration
@@ -180,11 +179,9 @@ func (c *client) probe(target string, key string) message {
 			success = true // valid response
 			break
 		}
-
 		if success {
 			break
 		}
-
 	}
 	conn.Close()
 	return resp
