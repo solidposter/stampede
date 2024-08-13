@@ -21,16 +21,24 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"strconv"
 )
 
-func main() {
+var version string // Populated at build time
 
+func main() {
 	modePtr := flag.Bool("s", false, "Set server mode")
 	portPtr := flag.Int("p", 20000, "Base port")
 	numPtr := flag.Int("n", 10, "Number ports")
 	keyPtr := flag.String("k", "hemlignyckel", "Key")
+	versPtr := flag.Bool("V", false, "print version info")
 	flag.Parse()
+
+	if *versPtr {
+		fmt.Println("Version:", version)
+		os.Exit(0)
+	}
 
 	// Server mode
 	if *modePtr {
