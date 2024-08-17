@@ -17,14 +17,15 @@ package main
 //
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
 	"net"
 	"strconv"
 	"time"
+
+	"github.com/solidposter/stampede/pb"
+	"google.golang.org/protobuf/proto"
 )
 
 type client struct {
@@ -39,7 +40,13 @@ func newClient(srcport string) *client {
 
 func (c *client) start(targetIP string, req message) {
 	nbuf := make([]byte, 128)
-	resp := message{}
+	pbreq := &pb.Payload{
+		Key:   req.Key,
+		Id:    uint64(req.Id),
+		Hport: uint32(req.Hport),
+		Lport: uint32(req.Lport),
+	}
+	pbresp := &pb.Payload{}
 
 	conn, err := net.ListenPacket("udp", ":"+c.srcport)
 	if err != nil {
@@ -48,10 +55,9 @@ func (c *client) start(targetIP string, req message) {
 
 	for {
 		for dport := req.Lport; dport <= req.Hport; dport++ {
-			req.Id += 1
-			buffer := new(bytes.Buffer)
-			enc := json.NewEncoder(buffer)
-			err := enc.Encode(req)
+			pbreq.Id += 1
+
+			outbytes, err := proto.Marshal(pbreq)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -67,7 +73,7 @@ func (c *client) start(targetIP string, req message) {
 
 			success := false // set to true for valid response
 			for {
-				_, err = conn.WriteTo(buffer.Bytes(), targetAddr)
+				_, err = conn.WriteTo(outbytes, targetAddr)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -87,18 +93,18 @@ func (c *client) start(targetIP string, req message) {
 						log.Printf("Packet received from invalid source %v with length %v", addr, length)
 						continue
 					}
-					dec := json.NewDecoder(bytes.NewBuffer(nbuf[:length]))
-					err = dec.Decode(&resp)
-					if err != nil {
-						log.Print("Client decode error:", err)
+
+					if err := proto.Unmarshal(nbuf[0:length], pbresp); err != nil {
+						log.Print("Server decode error:", err, addr)
 						continue
 					}
-					if resp.Key != req.Key {
-						log.Print("Invalid key in response:", resp.Key)
+
+					if pbresp.Key != pbreq.Key {
+						log.Print("Invalid key in response:", pbresp.Key)
 						continue
 					}
-					if resp.Id != req.Id {
-						log.Printf("Incorrect Id, expected %v got %v\n", req.Id, resp.Id)
+					if pbresp.Id != pbreq.Id {
+						log.Printf("Incorrect Id, expected %v got %v\n", pbreq.Id, pbresp.Id)
 						continue
 					}
 					success = true // valid response
@@ -114,19 +120,16 @@ func (c *client) start(targetIP string, req message) {
 
 // Returns a message struct with server configuration
 func (c *client) probe(target string, key string) message {
-	var buffer bytes.Buffer
-	nbuf := make([]byte, 128)
-	resp := message{}
+	inbytes := make([]byte, 128)
+	pbresp := &pb.Payload{}
 
-	req := message{
+	pbreq := &pb.Payload{
 		Key:   key,
-		Id:    rand.Int(),
+		Id:    uint64(rand.Int63()),
 		Lport: 0,
 		Hport: 0,
 	}
-
-	enc := json.NewEncoder(&buffer)
-	err := enc.Encode(req)
+	outbytes, err := proto.Marshal(pbreq)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -142,14 +145,14 @@ func (c *client) probe(target string, key string) message {
 
 	success := false // set to true for valid response
 	for {
-		_, err = conn.WriteTo(buffer.Bytes(), targetAddr)
+		_, err = conn.WriteTo(outbytes, targetAddr)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		conn.SetReadDeadline((time.Now().Add(1000 * time.Millisecond)))
 		for {
-			length, addr, err := conn.ReadFrom(nbuf)
+			length, addr, err := conn.ReadFrom(inbytes)
 			if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
 				fmt.Print(".")
 				break
@@ -162,18 +165,18 @@ func (c *client) probe(target string, key string) message {
 				log.Printf("Packet received from invalid source %v with length %v", addr, length)
 				continue
 			}
-			dec := json.NewDecoder(bytes.NewBuffer(nbuf[:length]))
-			err = dec.Decode(&resp)
-			if err != nil {
-				log.Print("Client decode error:", err)
+
+			if err := proto.Unmarshal(inbytes[0:length], pbresp); err != nil {
+				log.Print("Server decode error:", err, addr)
 				continue
 			}
-			if resp.Key != req.Key {
-				log.Print("Invalid key in response:", resp.Key)
+
+			if pbresp.Key != pbreq.Key {
+				log.Print("Invalid key in response:", pbresp.Key)
 				continue
 			}
-			if resp.Id != req.Id {
-				log.Printf("Incorrect Id, expected %v got %v\n", req.Id, resp.Id)
+			if pbresp.Id != pbreq.Id {
+				log.Printf("Incorrect Id, expected %v got %v\n", pbreq.Id, pbresp.Id)
 				continue
 			}
 			success = true // valid response
@@ -184,5 +187,11 @@ func (c *client) probe(target string, key string) message {
 		}
 	}
 	conn.Close()
+
+	resp := message{}
+	resp.Key = key
+	resp.Id = int(pbresp.Id)
+	resp.Hport = int(pbresp.Hport)
+	resp.Lport = int(pbresp.Lport)
 	return resp
 }

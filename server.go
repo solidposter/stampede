@@ -17,10 +17,11 @@ package main
 //
 
 import (
-	"bytes"
-	"encoding/json"
 	"log"
 	"net"
+
+	"github.com/solidposter/stampede/pb"
+	"google.golang.org/protobuf/proto"
 )
 
 type server struct {
@@ -34,7 +35,7 @@ func newServer(port string) *server {
 }
 
 func (s *server) start(config message) {
-	req := message{}
+	pbreq := &pb.Payload{}
 	nbuf := make([]byte, 128)
 
 	conn, err := net.ListenPacket("udp", ":"+s.port)
@@ -48,26 +49,23 @@ func (s *server) start(config message) {
 			log.Fatal(err)
 		}
 
-		dec := json.NewDecoder(bytes.NewBuffer(nbuf[:length]))
-		err = dec.Decode(&req)
-		if err != nil {
-			log.Print("Server decode error:", err, addr)
+		if err := proto.Unmarshal(nbuf[0:length], pbreq); err != nil {
+			log.Print("Server decode error:", err, addr, length)
 			continue
 		}
-		if req.Key != config.Key {
-			log.Println("Server key mismatch", addr)
+		if pbreq.Key != config.Key {
+			log.Println("Server key mismatch", addr, pbreq.Key, config.Key)
 			continue
 		}
 
-		req.Lport = config.Lport
-		req.Hport = config.Hport
-		buffer := new(bytes.Buffer)
-		enc := json.NewEncoder(buffer)
-		err = enc.Encode(req)
+		pbreq.Lport = uint32(config.Lport)
+		pbreq.Hport = uint32(config.Hport)
+		nbuf, err := proto.Marshal(pbreq)
 		if err != nil {
 			log.Fatal(err)
 		}
-		_, err = conn.WriteTo(buffer.Bytes(), addr)
+
+		_, err = conn.WriteTo(nbuf, addr)
 		if err != nil {
 			log.Fatal(err)
 		}

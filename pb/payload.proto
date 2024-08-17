@@ -1,0 +1,11 @@
+syntax = "proto3";
+package main;
+
+option go_package = "github.com/solidposter/stampede/pb";
+
+message Payload {
+    string Key = 1;
+    uint64 Id = 2;
+    uint32 Lport = 3;
+    uint32 Hport = 4;
+}
