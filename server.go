@@ -34,7 +34,7 @@ func newServer(port string) *server {
 	}
 }
 
-func (s *server) start(config message) {
+func (s *server) start(config configuration) {
 	pbreq := &pb.Payload{}
 	nbuf := make([]byte, 128)
 

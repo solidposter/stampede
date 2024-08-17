@@ -42,7 +42,7 @@ func main() {
 
 	// Server mode
 	if *modePtr {
-		serverconfig := message{
+		serverconfig := configuration{
 			Key:   *keyPtr,
 			Id:    0,
 			Lport: *portPtr,

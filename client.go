@@ -38,13 +38,13 @@ func newClient(srcport string) *client {
 	}
 }
 
-func (c *client) start(targetIP string, req message) {
+func (c *client) start(targetIP string, config configuration) {
 	nbuf := make([]byte, 128)
 	pbreq := &pb.Payload{
-		Key:   req.Key,
-		Id:    uint64(req.Id),
-		Hport: uint32(req.Hport),
-		Lport: uint32(req.Lport),
+		Key:   config.Key,
+		Id:    uint64(config.Id),
+		Hport: uint32(config.Hport),
+		Lport: uint32(config.Lport),
 	}
 	pbresp := &pb.Payload{}
 
@@ -54,7 +54,7 @@ func (c *client) start(targetIP string, req message) {
 	}
 
 	for {
-		for dport := req.Lport; dport <= req.Hport; dport++ {
+		for dport := config.Lport; dport <= config.Hport; dport++ {
 			pbreq.Id += 1
 
 			outbytes, err := proto.Marshal(pbreq)
@@ -119,7 +119,7 @@ func (c *client) start(targetIP string, req message) {
 }
 
 // Returns a message struct with server configuration
-func (c *client) probe(target string, key string) message {
+func (c *client) probe(target string, key string) configuration {
 	inbytes := make([]byte, 128)
 	pbresp := &pb.Payload{}
 
@@ -188,7 +188,7 @@ func (c *client) probe(target string, key string) message {
 	}
 	conn.Close()
 
-	resp := message{}
+	resp := configuration{}
 	resp.Key = key
 	resp.Id = int(pbresp.Id)
 	resp.Hport = int(pbresp.Hport)

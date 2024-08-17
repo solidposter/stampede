@@ -21,7 +21,7 @@ package main
 // The clients send req with Key and ID set, server responds and
 // sets Lport and Hport in the response.
 
-type message struct {
+type configuration struct {
 	Key   string // secret key
 	Id    int    // message ID
 	Lport int    // lowest port in range
