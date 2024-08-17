@@ -22,7 +22,6 @@ package main
 
 type configuration struct {
 	Key   string // secret key
-	Id    int    // message ID
 	Lport int    // lowest port in range
 	Hport int    // highest port in range
 }

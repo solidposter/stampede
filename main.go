@@ -44,7 +44,6 @@ func main() {
 	if *modePtr {
 		serverconfig := configuration{
 			Key:   *keyPtr,
-			Id:    0,
 			Lport: *portPtr,
 			Hport: *portPtr + *numPtr - 1,
 		}

@@ -43,7 +43,7 @@ func (c *client) start(targetIP string, config configuration) {
 	nbuf := make([]byte, 128)
 	pbreq := &pb.Payload{
 		Key:   config.Key,
-		Id:    uint64(config.Id),
+		Id:    uint64(rand.Int63()),
 		Hport: uint32(config.Hport),
 		Lport: uint32(config.Lport),
 	}
@@ -195,7 +195,6 @@ func (c *client) probe(target string, key string) configuration {
 
 	resp := configuration{}
 	resp.Key = key
-	resp.Id = int(pbresp.Id)
 	resp.Hport = int(pbresp.Hport)
 	resp.Lport = int(pbresp.Lport)
 	return resp
