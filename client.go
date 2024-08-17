@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"math/rand"
 	"net"
 	"strconv"
@@ -55,7 +56,11 @@ func (c *client) start(targetIP string, config configuration) {
 
 	for {
 		for dport := config.Lport; dport <= config.Hport; dport++ {
-			pbreq.Id += 1
+			if pbreq.Id == math.MaxUint64 {
+				pbreq.Id = 0
+			} else {
+				pbreq.Id += 1
+			}
 
 			outbytes, err := proto.Marshal(pbreq)
 			if err != nil {
