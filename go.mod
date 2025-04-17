@@ -1,5 +1,7 @@
 module github.com/solidposter/stampede
 
-go 1.20
+go 1.22
 
-require google.golang.org/protobuf v1.34.2
+toolchain go1.22.0
+
+require google.golang.org/protobuf v1.36.6
